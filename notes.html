@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MyNotes - Write Notes</title>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@700&family=Indie+Flower&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(120deg, #ffeef6 0%, #d0f1ff 100%);
+      font-family: 'Indie Flower', 'Quicksand', cursive, sans-serif;
+      margin: 0;
+      min-height: 100vh;
+      color: #a259c6;
+      position: relative;
+      overflow-x: hidden;
+    }
+    .dashboard-link {
+      position: fixed;
+      top: 28px;
+      right: 40px;
+      z-index: 100;
+      background: #ffb6d5;
+      color: #fff;
+      font-family: 'Quicksand', sans-serif;
+      font-weight: bold;
+      font-size: 1.1rem;
+      border-radius: 20px;
+      padding: 10px 26px;
+      text-decoration: none;
+      box-shadow: 0 2px 8px #ffe0ec;
+      letter-spacing: 1px;
+      transition: background 0.2s, transform 0.1s;
+      border: 2px solid #fff0f7;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .dashboard-link:hover {
+      background: #ff7eb9;
+      transform: scale(1.05);
+    }
+    .canvas-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 90px;
+      min-height: 60vh;
+    }
+    .note-canvas-main {
+      background: #fff7fb;
+      border-radius: 32px;
+      box-shadow: 0 8px 32px #f9b4d1a0;
+      padding: 36px 28px 28px 28px;
+      min-width: 600px;
+      max-width: 900px;
+      min-height: 400px;
+      width: 90vw;
+      max-height: 80vh;
+      border: 2.5px dashed #ffb6d5;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      margin-bottom: 30px;
+      transition: box-shadow 0.2s, transform 0.1s;
+      animation: popIn 0.4s;
+    }
+    .note-canvas-main textarea {
+      border: none;
+      background: transparent;
+      resize: none;
+      font-family: 'Indie Flower', cursive;
+      font-size: 1.5rem;
+      color: #a259c6;
+      outline: none;
+      min-height: 300px;
+      max-height: 600px;
+      width: 100%;
+      padding: 0;
+      margin-bottom: 10px;
+      transition: background 0.2s;
+    }
+    .note-canvas-main .note-date {
+      font-size: 1.05rem;
+      color: #b48bc6;
+      text-align: right;
+      margin-top: auto;
+      margin-bottom: 2px;
+      font-family: 'Quicksand', sans-serif;
+    }
+    .note-canvas-main .delete-btn {
+      position: absolute;
+      top: 14px;
+      right: 18px;
+      background: #ffb6d5;
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      font-size: 1.5rem;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      box-shadow: 0 2px 8px #ffe0ec;
+      z-index: 2;
+    }
+    .note-canvas-main .delete-btn:hover {
+      background: #ff7eb9;
+      transform: scale(1.1) rotate(-10deg);
+    }
+    .floating-add-btn {
+      position: fixed;
+      bottom: 38px;
+      right: 38px;
+      background: linear-gradient(90deg, #ffb6d5 60%, #ff7eb9 100%);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 70px;
+      height: 70px;
+      font-size: 2.5rem;
+      font-family: inherit;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 16px #ffe0ec;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, transform 0.1s;
+      z-index: 200;
+    }
+    .floating-add-btn:hover {
+      background: linear-gradient(90deg, #ff7eb9 0%, #ffb6d5 100%);
+      transform: scale(1.08) rotate(8deg);
+    }
+    .notes-list {
+      margin-top: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      align-items: center;
+      width: 100%;
+      max-width: 900px;
+    }
+    .note-canvas {
+      background: #fff7fb;
+      border-radius: 24px;
+      box-shadow: 0 4px 16px #f9b4d1a0;
+      padding: 28px 24px 18px 24px;
+      min-width: 500px;
+      max-width: 850px;
+      min-height: 180px;
+      border: 2px dashed #b5baff;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      transition: box-shadow 0.2s, transform 0.1s;
+      animation: popIn 0.4s;
+    }
+    .note-canvas textarea {
+      border: none;
+      background: transparent;
+      resize: none;
+      font-family: 'Indie Flower', cursive;
+      font-size: 1.3rem;
+      color: #a259c6;
+      outline: none;
+      min-height: 100px;
+      max-height: 400px;
+      width: 100%;
+      padding: 0;
+      margin-bottom: 8px;
+    }
+    .note-canvas .note-date {
+      font-size: 1rem;
+      color: #b48bc6;
+      text-align: right;
+      margin-top: auto;
+      margin-bottom: 2px;
+      font-family: 'Quicksand', sans-serif;
+    }
+    .note-canvas .delete-btn {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      background: #b5baff;
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      font-size: 1.3rem;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      box-shadow: 0 2px 8px #e0f7fa;
+    }
+    .note-canvas .delete-btn:hover {
+      background: #a259c6;
+      transform: scale(1.1) rotate(-10deg);
+    }
+    .empty-msg {
+      color: #bdbdbd;
+      font-size: 1.2rem;
+      margin-top: 40px;
+      font-family: 'Quicksand', sans-serif;
+      text-align: center;
+      width: 100%;
+    }
+    @keyframes popIn {
+      0% { transform: scale(0.95); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    @media (max-width: 1000px) {
+      .note-canvas-main, .note-canvas, .notes-list {
+        min-width: 95vw;
+        max-width: 98vw;
+      }
+    }
+    @media (max-width: 700px) {
+      .canvas-container, .notes-list {
+        max-width: 98vw;
+      }
+      .note-canvas-main, .note-canvas {
+        min-width: 95vw;
+        max-width: 98vw;
+      }
+      .dashboard-link {
+        right: 10px;
+        top: 10px;
+        padding: 8px 16px;
+        font-size: 1rem;
+      }
+      .floating-add-btn {
+        right: 12px;
+        bottom: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a href="home.html" class="dashboard-link">🏠 Dashboard</a>
+  <div class="canvas-container">
+    <div class="note-canvas-main">
+      <button class="delete-btn" title="Clear" onclick="clearMainNote()">&times;</button>
+      <textarea id="mainNote" placeholder="Write your notes here..."></textarea>
+      <div class="note-date" id="mainNoteDate"></div>
+    </div>
+    <div class="notes-list" id="notesList"></div>
+    <div class="empty-msg" id="emptyMsg" style="display:none;">No saved notes yet. Click the pink + button to save your first note! 💖</div>
+  </div>
+  <button class="floating-add-btn" onclick="addNote()" title="Save as new note">+</button>
+  <script>
+    // Main notes canvas logic
+    const mainNote = document.getElementById('mainNote');
+    const mainNoteDate = document.getElementById('mainNoteDate');
+    function getNotes() {
+      return JSON.parse(localStorage.getItem('cuteNotes') || '[]');
+    }
+    function saveNotes(notes) {
+      localStorage.setItem('cuteNotes', JSON.stringify(notes));
+    }
+    function renderNotes() {
+      const notes = getNotes();
+      const notesList = document.getElementById('notesList');
+      const emptyMsg = document.getElementById('emptyMsg');
+      notesList.innerHTML = '';
+      if (notes.length === 0) {
+        emptyMsg.style.display = '';
+        return;
+      }
+      emptyMsg.style.display = 'none';
+      notes.forEach((note, idx) => {
+        const div = document.createElement('div');
+        div.className = 'note-canvas';
+        div.innerHTML = `
+          <button class="delete-btn" title="Delete" onclick="deleteNote(${idx})">&times;</button>
+          <textarea oninput="editNote(${idx}, this.value)">${note.text}</textarea>
+          <div class="note-date">${note.date || ''}</div>
+        `;
+        notesList.appendChild(div);
+      });
+    }
+    function addNote() {
+      const text = mainNote.value.trim();
+      if (!text) {
+        mainNote.focus();
+        return;
+      }
+      const notes = getNotes();
+      const now = new Date();
+      notes.unshift({
+        text: text,
+        date: now.toLocaleString()
+      });
+      saveNotes(notes);
+      mainNote.value = '';
+      mainNoteDate.textContent = '';
+      renderNotes();
+    }
+    function editNote(idx, value) {
+      const notes = getNotes();
+      notes[idx].text = value;
+      saveNotes(notes);
+    }
+    function deleteNote(idx) {
+      const notes = getNotes();
+      notes.splice(idx, 1);
+      saveNotes(notes);
+      renderNotes();
+    }
+    function clearMainNote() {
+      mainNote.value = '';
+      mainNoteDate.textContent = '';
+      mainNote.focus();
+    }
+    // Optional: Show last edit time for main note
+    mainNote.addEventListener('input', () => {
+      const now = new Date();
+      mainNoteDate.textContent = 'Last edit: ' + now.toLocaleTimeString();
+    });
+    renderNotes();
+  </script>
+</body>
+</html>
