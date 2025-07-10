@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MyNotes Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(135deg, #ffeef6 0%, #f9e7fe 100%);
+      min-height: 100vh;
+      margin: 0;
+      font-family: 'Quicksand', sans-serif;
+      color: #a259c6;
+      position: relative;
+      overflow-x: hidden;
+    }
+    .logo-fixed {
+      position: fixed;
+      top: 24px;
+      left: 32px;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      user-select: none;
+    }
+    .logo-fixed .logo {
+      background: #ffb6d5;
+      color: #fff;
+      font-weight: bold;
+      font-size: 1.7rem;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px #ffe0ec;
+      letter-spacing: 1px;
+      border: 3px solid #fff0f7;
+    }
+    .logo-fixed .logo-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #ff7eb9;
+      letter-spacing: 2px;
+      text-shadow: 0 2px 8px #ffe0ec;
+    }
+    .dashboard {
+      max-width: 440px;
+      margin: 100px auto 0 auto;
+      background: #fff;
+      border-radius: 32px;
+      box-shadow: 0 8px 32px #f9b4d1a0;
+      padding: 44px 32px 36px 32px;
+      position: relative;
+      overflow: hidden;
+      transition: box-shadow 0.2s;
+    }
+    .dashboard::before {
+      content: "";
+      position: absolute;
+      top: -60px;
+      right: -60px;
+      width: 160px;
+      height: 160px;
+      background: radial-gradient(circle, #ffb6d5 0%, #ffeef6 80%);
+      opacity: 0.18;
+      border-radius: 50%;
+      z-index: 0;
+    }
+    .dashboard::after {
+      content: "";
+      position: absolute;
+      bottom: -40px;
+      left: -40px;
+      width: 120px;
+      height: 120px;
+      background: radial-gradient(circle, #a259c6 0%, #ffeef6 80%);
+      opacity: 0.13;
+      border-radius: 50%;
+      z-index: 0;
+    }
+    .logo-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 18px;
+      position: relative;
+      z-index: 1;
+    }
+    .logo-header .logo {
+      background: #ffb6d5;
+      color: #fff;
+      font-weight: bold;
+      font-size: 1.7rem;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px #ffe0ec;
+      letter-spacing: 1px;
+      border: 3px solid #fff0f7;
+    }
+    .header-title {
+      font-size: 2.2rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: #ff7eb9;
+      text-shadow: 0 2px 8px #ffe0ec;
+      margin-left: 2px;
+    }
+    .dashboard-content {
+      margin-top: 18px;
+      font-size: 1.13rem;
+      color: #a259c6;
+      line-height: 1.7;
+      padding-bottom: 40px;
+      position: relative;
+      z-index: 1;
+      background: rgba(255,255,255,0.85);
+      border-radius: 18px;
+      box-shadow: 0 2px 8px #ffe0ec33;
+      padding: 18px 18px 28px 18px;
+    }
+    .dashboard-content ul {
+      margin: 12px 0 0 18px;
+      padding: 0;
+      color: #c77dba;
+      font-size: 1.08rem;
+      list-style: none;
+    }
+    .dashboard-content ul li {
+      margin-bottom: 10px;
+      padding-left: 0;
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #ffeef6;
+      border-radius: 12px;
+      padding: 7px 12px;
+      box-shadow: 0 1px 4px #ffe0ec44;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+    .dashboard-content ul li:hover {
+      background: #f9e7fe;
+    }
+    .dashboard-content strong {
+      font-size: 1.15rem;
+      color: #a259c6;
+      letter-spacing: 1px;
+      display: block;
+      margin-bottom: 10px;
+    }
+    .dashboard-content p {
+      margin-top: 18px;
+      color: #b48bc6;
+      font-size: 1.05rem;
+      text-align: center;
+    }
+    .edit-section {
+      position: absolute;
+      bottom: 18px;
+      right: 28px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      z-index: 2;
+    }
+    .edit-btn {
+      background: linear-gradient(90deg, #ffb6d5 60%, #ff7eb9 100%);
+      color: #fff;
+      border: none;
+      border-radius: 16px;
+      padding: 7px 18px;
+      font-size: 1rem;
+      font-family: inherit;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 2px 8px #ffe0ec;
+      transition: background 0.2s, transform 0.1s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .edit-btn:hover {
+      background: linear-gradient(90deg, #ff7eb9 0%, #ffb6d5 100%);
+      transform: scale(1.05);
+    }
+    .edit-icon {
+      font-size: 1.1em;
+      vertical-align: middle;
+    }
+    /* Floating hearts background */
+    .floating-hearts {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .floating-hearts .heart {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      background: #ffb6d5;
+      border-radius: 50% 50% 0 0;
+      transform: rotate(-45deg);
+      opacity: 0.18;
+      animation: floatHeart 7s infinite ease-in-out;
+    }
+    .floating-hearts .heart::before,
+    .floating-hearts .heart::after {
+      content: "";
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      background: inherit;
+      border-radius: 50%;
+    }
+    .floating-hearts .heart::before {
+      top: -12px;
+      left: 0;
+    }
+    .floating-hearts .heart::after {
+      left: 12px;
+      top: 0;
+    }
+    @keyframes floatHeart {
+      0% { transform: translateY(0) scale(1) rotate(-45deg);}
+      50% { transform: translateY(-60px) scale(1.15) rotate(-45deg);}
+      100% { transform: translateY(0) scale(1) rotate(-45deg);}
+    }
+    @media (max-width: 600px) {
+      .dashboard {
+        margin-top: 90px;
+        padding: 18px 4px 24px 4px;
+      }
+      .logo-fixed {
+        top: 10px;
+        left: 10px;
+      }
+      .edit-section {
+        right: 10px;
+      }
+    }
+    /* Sign in button at bottom center */
+    #loginDiv {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 32px;
+      display: flex;
+      justify-content: center;
+      z-index: 200;
+    }
+  </style>
+</head>
+<body>
+  <div class="logo-fixed">
+    <div class="logo">MN</div>
+    <div class="logo-title">MyNotes</div>
+  </div>
+  <!-- Floating hearts background -->
+  <div class="floating-hearts">
+    <div class="heart" style="left:10vw;top:80vh;"></div>
+    <div class="heart heart2" style="left:80vw;top:20vh;"></div>
+    <div class="heart heart3" style="left:60vw;top:60vh;"></div>
+    <div class="heart heart4" style="left:30vw;top:30vh;"></div>
+    <div class="heart heart5" style="left:70vw;top:75vh;"></div>
+    <!-- Extra hearts with various colors, positions, and delays -->
+    <div class="heart" style="left:15vw;top:10vh;background:#b5baff;opacity:0.13;animation-delay:1.2s;animation-duration:8s;"></div>
+    <div class="heart" style="left:25vw;top:50vh;background:#c7b5ff;opacity:0.15;animation-delay:2.5s;animation-duration:9s;"></div>
+    <div class="heart" style="left:40vw;top:20vh;background:#b5e0ff;opacity:0.14;animation-delay:3.1s;animation-duration:7.5s;"></div>
+    <div class="heart" style="left:55vw;top:10vh;background:#ffb6d5;opacity:0.12;animation-delay:0.7s;animation-duration:10s;"></div>
+    <div class="heart" style="left:85vw;top:60vh;background:#b5baff;opacity:0.13;animation-delay:4.2s;animation-duration:8.5s;"></div>
+    <div class="heart" style="left:20vw;top:70vh;background:#c7b5ff;opacity:0.11;animation-delay:1.8s;animation-duration:11s;"></div>
+    <div class="heart" style="left:35vw;top:80vh;background:#b5e0ff;opacity:0.14;animation-delay:2.9s;animation-duration:9.5s;"></div>
+    <div class="heart" style="left:50vw;top:50vh;background:#ffb6d5;opacity:0.13;animation-delay:3.7s;animation-duration:8s;"></div>
+    <div class="heart" style="left:65vw;top:40vh;background:#b5baff;opacity:0.12;animation-delay:0.5s;animation-duration:10.5s;"></div>
+    <div class="heart" style="left:75vw;top:10vh;background:#c7b5ff;opacity:0.13;animation-delay:2.2s;animation-duration:7.8s;"></div>
+    <div class="heart" style="left:90vw;top:50vh;background:#b5e0ff;opacity:0.13;animation-delay:1.1s;animation-duration:9.2s;"></div>
+    <div class="heart" style="left:5vw;top:40vh;background:#ffb6d5;opacity:0.11;animation-delay:3.3s;animation-duration:10.8s;"></div>
+    <div class="heart" style="left:12vw;top:60vh;background:#b5baff;opacity:0.13;animation-delay:2.7s;animation-duration:8.7s;"></div>
+    <div class="heart" style="left:28vw;top:15vh;background:#c7b5ff;opacity:0.12;animation-delay:1.5s;animation-duration:9.9s;"></div>
+    <div class="heart" style="left:44vw;top:70vh;background:#b5e0ff;opacity:0.13;animation-delay:0.9s;animation-duration:10.2s;"></div>
+    <div class="heart" style="left:58vw;top:25vh;background:#ffb6d5;opacity:0.14;animation-delay:2.1s;animation-duration:8.3s;"></div>
+    <div class="heart" style="left:72vw;top:55vh;background:#b5baff;opacity:0.12;animation-delay:3.6s;animation-duration:9.1s;"></div>
+    <div class="heart" style="left:82vw;top:35vh;background:#c7b5ff;opacity:0.13;animation-delay:1.3s;animation-duration:10.6s;"></div>
+    <div class="heart" style="left:95vw;top:15vh;background:#b5e0ff;opacity:0.12;animation-delay:2.8s;animation-duration:8.9s;"></div>
+    <div class="heart" style="left:50vw;top:90vh;background:#ffb6d5;opacity:0.13;animation-delay:0.6s;animation-duration:11.2s;"></div>
+    <div class="heart" style="left:60vw;top:5vh;background:#b5baff;opacity:0.13;animation-delay:2.4s;animation-duration:9.7s;"></div>
+    <div class="heart" style="left:80vw;top:90vh;background:#c7b5ff;opacity:0.12;animation-delay:1.7s;animation-duration:10.4s;"></div>
+    <div class="heart" style="left:15vw;top:85vh;background:#b5e0ff;opacity:0.13;animation-delay:3.9s;animation-duration:8.6s;"></div>
+    <div class="heart" style="left:35vw;top:60vh;background:#ffb6d5;opacity:0.12;animation-delay:1.9s;animation-duration:9.3s;"></div>
+  </div>
+  <div class="dashboard">
+    <div class="logo-header">
+      <div class="logo">MN</div>
+      <div class="header-title">MyNotes</div>
+    </div>
+    <div class="dashboard-content">
+      <strong>Welcome to your MyNotes dashboard!</strong>
+      <ul>
+        <li>
+          <a href="notes.html" style="text-decoration:none;color:inherit;display:flex;align-items:center;width:100%;">
+            📝 Create, view, and organize your notes easily.
+          </a>
+        </li>
+        <li>🔍 Search and find your notes quickly.</li>
+        <li>🌸 Enjoy a cute, simple, and distraction-free interface.</li>
+        <li>🔒 Your notes are saved locally and kept private.</li>
+      </ul>
+      <p>Start by adding your first note or editing your dashboard info below!</p>
+    </div>
+    <div class="edit-section">
+      <button class="edit-btn">
+        <span class="edit-icon">✏️</span>
+        Edit Dashboard
+      </button>
+    </div>
+  </div>
+  <!-- Simple Google Sign-In button at bottom center -->
+  <div id="loginDiv">
+    <div id="g_id_onload"
+         data-client_id="23607222779-vttbrqun6edptfloo2sj3fnr2k7mqc08.apps.googleusercontent.com"
+         data-context="signin"
+         data-ux_mode="popup"
+         data-callback="handleCredentialResponse"
+         data-auto_prompt="false">
+    </div>
+    <div class="g_id_signin"
+         data-type="standard"
+         data-shape="pill"
+         data-theme="filled_blue"
+         data-text="sign_in_with"
+         data-size="large"
+         data-logo_alignment="left">
+    </div>
+  </div>
+  <div id="userInfo" style="display:none;text-align:center;margin-bottom:80px;color:#a259c6;font-size:1.1rem;"></div>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script>
+    function handleCredentialResponse(response) {
+      // Decode JWT to get user info
+      const data = JSON.parse(atob(response.credential.split('.')[1]));
+      document.getElementById('userInfo').style.display = '';
+      document.getElementById('userInfo').innerHTML =
+        `<b>Welcome, ${data.name}!</b><br><img src="${data.picture}" style="border-radius:50%;margin:10px 0;width:48px;height:48px;"><br>${data.email}`;
+      document.getElementById('loginDiv').style.display = 'none';
+    }
+  </script>
+</body>
+</html>
