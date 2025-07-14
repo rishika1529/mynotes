@@ -345,14 +345,31 @@
   <div id="userInfo" style="display:none;text-align:center;margin-bottom:80px;color:#a259c6;font-size:1.1rem;"></div>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script>
-    function handleCredentialResponse(response) {
+  function handleCredentialResponse(response) {
       // Decode JWT to get user info
       const data = JSON.parse(atob(response.credential.split('.')[1]));
+      // Store user email in sessionStorage
+      sessionStorage.setItem('userEmail', data.email); // Added
       document.getElementById('userInfo').style.display = '';
       document.getElementById('userInfo').innerHTML =
         `<b>Welcome, ${data.name}!</b><br><img src="${data.picture}" style="border-radius:50%;margin:10px 0;width:48px;height:48px;"><br>${data.email}`;
       document.getElementById('loginDiv').style.display = 'none';
+
+      // Redirect to notes.html with user email or just let them navigate
+      // For now, we'll just store and assume navigation.
+      // If you want to auto-redirect: window.location.href = 'notes.html';
     }
+
+    // Check if user is already logged in on page load
+    window.onload = function() {
+      const userEmail = sessionStorage.getItem('userEmail');
+      if (userEmail) {
+        // You might want to fetch user data again if needed, or just display a generic welcome
+        document.getElementById('userInfo').style.display = '';
+        document.getElementById('userInfo').innerHTML = `<b>Welcome back, ${userEmail}!</b>`;
+        document.getElementById('loginDiv').style.display = 'none';
+      }
+    };
   </script>
 </body>
 </html>

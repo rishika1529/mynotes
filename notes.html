@@ -237,87 +237,238 @@
   </style>
 </head>
 <body>
-  <a href="home.html" class="dashboard-link">🏠 Dashboard</a>
+<a href="home.html" class="dashboard-link">🏠 Dashboard</a>
   <div class="canvas-container">
     <div class="note-canvas-main">
       <button class="delete-btn" title="Clear" onclick="clearMainNote()">&times;</button>
       <textarea id="mainNote" placeholder="Write your notes here..."></textarea>
       <div class="note-date" id="mainNoteDate"></div>
+      <input type="email" id="shareEmail" placeholder="Share with email" style="margin-top: 10px; font-family: 'Quicksand';">
+      <button onclick="shareNote()" style="margin-top: 5px; font-family: 'Quicksand';">Share Note</button>
     </div>
     <div class="notes-list" id="notesList"></div>
     <div class="empty-msg" id="emptyMsg" style="display:none;">No saved notes yet. Click the pink + button to save your first note! 💖</div>
   </div>
   <button class="floating-add-btn" onclick="addNote()" title="Save as new note">+</button>
   <script>
-    // Main notes canvas logic
-    const mainNote = document.getElementById('mainNote');
+      const mainNote = document.getElementById('mainNote');
     const mainNoteDate = document.getElementById('mainNoteDate');
-    function getNotes() {
-      return JSON.parse(localStorage.getItem('cuteNotes') || '[]');
+    const SERVER_URL = 'http://localhost:3000/api/notes'; // Your Node.js server URL
+    let currentUserEmail = ''; // To store the email of the logged-in user
+
+    // Function to get current user email from sessionStorage
+    function getUserEmail() {
+      return sessionStorage.getItem('userEmail');
     }
-    function saveNotes(notes) {
-      localStorage.setItem('cuteNotes', JSON.stringify(notes));
+
+    // Initialize user email on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      currentUserEmail = getUserEmail();
+      if (!currentUserEmail) {
+        alert('Please log in from the dashboard to manage your notes.');
+        window.location.href = 'home.html'; // Redirect if no user email
+      } else {
+        renderNotes(); // Load notes for the logged-in user
+      }
+    });
+
+    // Fetches notes from the backend for the current user
+    async function getNotesFromBackend() {
+      try {
+        const response = await fetch(`${SERVER_URL}?email=${currentUserEmail}`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const notes = await response.json();
+        return notes;
+      } catch (error) {
+        console.error('Error fetching notes:', error);
+        alert('Failed to load notes. Please try again later.');
+        return [];
+      }
     }
-    function renderNotes() {
-      const notes = getNotes();
+
+    // Renders notes fetched from the backend
+    async function renderNotes() {
+      const notes = await getNotesFromBackend();
       const notesList = document.getElementById('notesList');
       const emptyMsg = document.getElementById('emptyMsg');
-      notesList.innerHTML = '';
+      notesList.innerHTML = ''; // Clear existing notes
+
       if (notes.length === 0) {
         emptyMsg.style.display = '';
-        return;
+      } else {
+        emptyMsg.style.display = 'none';
+        notes.forEach(note => { // Use 'note' directly, no need for idx since we use _id for operations
+          const div = document.createElement('div');
+          div.className = 'note-canvas';
+          // Store note._id as a data attribute for easy access
+          div.setAttribute('data-id', note._id);
+          div.innerHTML = `
+            <button class="delete-btn" title="Delete" onclick="deleteNote('${note._id}')">&times;</button>
+            <textarea oninput="editNote('${note._id}', this.value)">${note.text}</textarea>
+            <div class="note-date">${note.date || ''}</div>
+            ${note.userEmail === currentUserEmail ? `<button onclick="showShareInput(this, '${note._id}')" style="margin-top: 5px; font-family: 'Quicksand';">Share Note</button>` : ''}
+            <input type="email" class="share-input" placeholder="Share with email" style="display:none; margin-top: 10px; font-family: 'Quicksand';">
+            <button class="send-share-btn" style="display:none; margin-top: 5px; font-family: 'Quicksand';" onclick="shareNote(this, '${note._id}')">Send Share</button>
+          `;
+          notesList.appendChild(div);
+        });
       }
-      emptyMsg.style.display = 'none';
-      notes.forEach((note, idx) => {
-        const div = document.createElement('div');
-        div.className = 'note-canvas';
-        div.innerHTML = `
-          <button class="delete-btn" title="Delete" onclick="deleteNote(${idx})">&times;</button>
-          <textarea oninput="editNote(${idx}, this.value)">${note.text}</textarea>
-          <div class="note-date">${note.date || ''}</div>
-        `;
-        notesList.appendChild(div);
-      });
     }
-    function addNote() {
+
+    function showShareInput(button, noteId) {
+        const noteCanvas = button.closest('.note-canvas');
+        const shareInput = noteCanvas.querySelector('.share-input');
+        const sendShareBtn = noteCanvas.querySelector('.send-share-btn');
+        if (shareInput && sendShareBtn) {
+            shareInput.style.display = 'block';
+            sendShareBtn.style.display = 'block';
+            button.style.display = 'none'; // Hide the initial share button
+        }
+    }
+
+    // Adds a new note to the backend
+    async function addNote() {
       const text = mainNote.value.trim();
       if (!text) {
         mainNote.focus();
         return;
       }
-      const notes = getNotes();
-      const now = new Date();
-      notes.unshift({
+
+      const noteData = {
         text: text,
-        date: now.toLocaleString()
-      });
-      saveNotes(notes);
-      mainNote.value = '';
-      mainNoteDate.textContent = '';
-      renderNotes();
+        user: { email: currentUserEmail }, // Pass user email
+        sharedWith: []
+      };
+
+      try {
+        const response = await fetch(SERVER_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(noteData),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const newNote = await response.json();
+        console.log('Note added:', newNote);
+        mainNote.value = '';
+        mainNoteDate.textContent = '';
+        renderNotes(); // Re-render notes to show the new one
+      } catch (error) {
+        console.error('Error adding note:', error);
+        alert('Failed to add note. Please try again.');
+      }
     }
-    function editNote(idx, value) {
-      const notes = getNotes();
-      notes[idx].text = value;
-      saveNotes(notes);
+
+    // Edits an existing note on the backend
+    async function editNote(id, value) {
+      try {
+        const response = await fetch(`${SERVER_URL}/${id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ text: value, requestingUserEmail: currentUserEmail }), // Pass requesting user email for authorization
+        });
+
+        if (!response.ok) {
+          // If the server returns an error, log it and potentially revert the UI
+          const errorData = await response.json();
+          console.error('Error updating note:', errorData.error || response.statusText);
+          alert('Failed to update note: ' + (errorData.error || 'Permission denied or network issue.'));
+          renderNotes(); // Re-render to revert any local changes if update failed
+        } else {
+          console.log('Note updated successfully');
+        }
+      } catch (error) {
+        console.error('Error editing note:', error);
+        alert('Failed to update note. Please check your connection.');
+        renderNotes(); // Re-render to revert any local changes if update failed
+      }
     }
-    function deleteNote(idx) {
-      const notes = getNotes();
-      notes.splice(idx, 1);
-      saveNotes(notes);
-      renderNotes();
+
+    // Deletes a note from the backend
+    async function deleteNote(id) {
+      if (!confirm('Are you sure you want to delete this note?')) {
+        return;
+      }
+      try {
+        const response = await fetch(`${SERVER_URL}/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ requestingUserEmail: currentUserEmail }), // Pass requesting user email for authorization
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        }
+
+        console.log('Note deleted:', id);
+        renderNotes(); // Re-render notes after deletion
+      } catch (error) {
+        console.error('Error deleting note:', error);
+        alert('Failed to delete note: ' + error.message);
+      }
     }
+
+    // Shares a note with another user via backend
+    async function shareNote(button, noteId) {
+        const noteCanvas = button.closest('.note-canvas');
+        const shareInput = noteCanvas.querySelector('.share-input');
+        const emailToShareWith = shareInput.value.trim();
+
+        if (!emailToShareWith) {
+            alert('Please enter an email to share with.');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${SERVER_URL}/${noteId}/share`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ emailToShareWith, requestingUserEmail: currentUserEmail }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+            }
+
+            alert(`Note shared successfully with ${emailToShareWith}`);
+            shareInput.value = ''; // Clear input
+            shareInput.style.display = 'none'; // Hide input
+            button.style.display = 'none'; // Hide send button
+            noteCanvas.querySelector('button[onclick^="showShareInput"]').style.display = 'block'; // Show original share button
+
+        } catch (error) {
+            console.error('Error sharing note:', error);
+            alert('Failed to share note: ' + error.message);
+        }
+    }
+
     function clearMainNote() {
       mainNote.value = '';
       mainNoteDate.textContent = '';
       mainNote.focus();
     }
-    // Optional: Show last edit time for main note
+
+    // Optional: Show last edit time for main note (now just for local display)
     mainNote.addEventListener('input', () => {
       const now = new Date();
       mainNoteDate.textContent = 'Last edit: ' + now.toLocaleTimeString();
     });
-    renderNotes();
+
   </script>
 </body>
 </html>
